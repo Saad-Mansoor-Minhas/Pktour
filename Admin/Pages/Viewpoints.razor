@@ -1,0 +1,157 @@
+﻿@page "/viewpoints/{id:int?}"
+@using Admin.Data;
+@using ClassLibraryEntity;
+@inject IViewpointService viewpointService;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Viewpoints</PageTitle>
+
+@if (viewpoint != null)  //if city is null, form is not accessible
+{
+	<h1>@(viewpoint.pk_ViewpointId > 0 ? "Edit Viewpoint" : "Add New Viewpoint")</h1>
+
+	<EditForm Model="@viewpoint" OnValidSubmit="SaveViewpoint">
+		<DataAnnotationsValidator />
+
+		<div class="mb-3">
+			<label for="ViewpointName" class="form-label">Viewpoint Name</label>
+			<InputText class="form-control" @bind-Value="viewpoint.VpName" />
+			<ValidationMessage For="@(() => viewpoint.VpName)" />
+		</div>
+		<div class="mb-3">
+			<label for="DetailEng" class="form-label">Detail Eng</label>
+			<InputText class="form-control" @bind-Value="viewpoint.VpDetailEng" />
+			<ValidationMessage For="@(() => viewpoint.VpDetailEng)" />
+		</div>
+		<div class="mb-3">
+			<label for="DetailUrdu" class="form-label">Detail Urdu</label>
+			<InputText class="form-control" @bind-Value="viewpoint.VpDetailUrdu" />
+			<ValidationMessage For="@(() => viewpoint.VpDetailUrdu)" />
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">Save</button>
+			<button class="btn btn-light" @onclick="Cancel">Cancel</button>
+		</div>
+	</EditForm>
+}
+else
+{
+	<h1>Viewpoints List</h1>
+	<button type="button" @onclick="NavigateToAddViewpoint" class="btn btn-primary">Add Viewpoint</button>
+	<table class="table">
+		<thead>
+			<tr>				
+				<th>Viewpoint Id</th>
+				<th>City Id </th>
+				<th>Viewpoint Name</th>
+				<th>Detail(Eng)</th>
+				<th>Detail(Urdu)</th>
+				<th>Delete</th>
+				<th>Update</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in viewpointsList)
+			{
+				<tr>
+					<td>@item.pk_ViewpointId</td>
+					<td>@item.fk_CityId</td>
+					<td>@item.VpName</td>
+					<td>@item.VpDetailEng</td>
+					<td>@item.VpDetailUrdu</td>
+					<td><button type="button" @onclick="(async () => await DeleteViewpoint(item.pk_ViewpointId))" class="btn btn-danger">Delete</button></td>
+					<td><button type="button" @onclick="(async () => await NavigateToUpdateViewpoint(item))" class="btn btn-primary">Edit</button></td>
+
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+
+
+@code {
+
+	[Parameter]
+	public int id { get; set; }
+
+	protected List<EntViewpoints> viewpointsList = new();
+	protected EntViewpoints viewpoint;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetViewpointsList();
+	}
+
+	protected async Task GetViewpointsList()
+	{
+		List<EntViewpoints> tempViewpoints;
+		tempViewpoints = await viewpointService.GetViewpoints();
+		viewpointsList = new ();
+		foreach(var item in tempViewpoints)
+		{
+			if(item.fk_CityId==id)
+			{
+				viewpointsList.Add(item);
+			}
+		}
+		tempViewpoints = null;
+	}
+	protected async Task DeleteViewpoint(int id)
+	{
+		bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+		if (confirmed)
+		{
+			await viewpointService.DeleteViewpoint(id);
+			await GetViewpointsList();
+		}
+	}
+	protected async Task NavigateToUpdateViewpoint(EntViewpoints ent)
+	{
+		viewpoint = ent;
+	}
+	protected void NavigateToAddViewpoint()
+	{
+		viewpoint = new EntViewpoints();
+		viewpoint.fk_CityId = id;
+	}
+	protected async Task SaveViewpoint()
+	{
+		if (viewpoint != null) // sending request to api if city is not null, if cancel button is pressed , it means city is null
+		{
+			if (viewpoint.pk_ViewpointId > 0) // Existing city, perform update
+			{
+				if (viewpoint.pk_ViewpointId < 1)
+				{
+					return;
+				}
+				//viewpoint.fk_CityId = id;
+				await viewpointService.UpdateViewpoint(viewpoint);
+			}
+			else // New city, perform save
+			{
+				if (viewpoint.pk_ViewpointId < 0)
+				{
+					return;
+				}
+				viewpoint.fk_CityId = id;
+				await viewpointService.SaveViewpoint(viewpoint);
+			}
+		}
+
+		viewpoint = null; // Reset the city object after save/update
+		await GetViewpointsList();
+	}
+
+	protected async Task Cancel()
+	{
+		viewpoint = null; // Reset the city object on cancel
+	}
+
+	protected async Task NavigateToViewpoints(int CityId)
+	{
+		NavigationManager.NavigateTo("/viewpoints");
+	}
+}
