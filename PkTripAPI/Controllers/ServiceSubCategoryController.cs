@@ -15,11 +15,28 @@ namespace PkTripAPI.Controllers
 	public class ServiceSubCategoryController : ControllerBase
 	{
 		[HttpGet]
-		[Route("getservicesubcategory")]
-		public async Task<ActionResult> GetServiceSubCategory()
+		[Route("getallservicesubcategory")]
+		public async Task<ActionResult> GetAllServiceSubCategory()
 		{
 			ContentResult result = new ContentResult();
-			result = (ContentResult)await DalCRUD.ReadData("SP_GetServiceSubCategory");
+			result = (ContentResult)await DalCRUD.ReadData("SP_GetAllServiceSubCategory");
+			if (result != null)
+			{
+				return result;
+			}
+			else { return new ContentResult(); }
+		}
+
+		[HttpGet]
+		[Route("getservicesubcategory/{CatId}")]
+		public async Task<ActionResult> GetServiceSubCategory(int CatId)
+		{
+			ContentResult result = new ContentResult();
+			SqlParameter[] sp =
+			{
+				new SqlParameter("@pk_CategoryId",CatId)
+			};
+			result = (ContentResult)await DalCRUD.ReadData("SP_GetServiceSubCategory",sp);
 			if (result != null)
 			{
 				return result;
@@ -29,7 +46,7 @@ namespace PkTripAPI.Controllers
 
 
 		[HttpPost]
-		[Route("saveservicesubcatagory")]
+		[Route("saveservicesubcategory")]
 		public async Task SaveServiceSubCategory(EntServiceSubCategory essc)
 		{
 			SqlParameter[] sp =
@@ -43,19 +60,19 @@ namespace PkTripAPI.Controllers
 
 
 		[HttpDelete]
-		[Route("deleteservicesubcatagory")]
-		public async Task DeleteServiceSubCategory(EntServiceSubCategory essc)
+		[Route("deleteservicesubcategory/{SubCatId}")]
+		public async Task DeleteServiceSubCategory(int SubCatId)
 		{
 			SqlParameter[] sp =
 			{
-				new SqlParameter("@pk_SubCategoryId",essc.pk_SubCategoryId)
+				new SqlParameter("@pk_SubCategoryId",SubCatId)
 			};
 			await DalCRUD.CRUD("SP_DeleteServiceSubCategory", sp);
 		}
 
 
 		[HttpPut]
-		[Route("updateservicesubcatagory")]
+		[Route("updateservicesubcategory")]
 		public async Task UpdateServiceSubCategory(EntServiceSubCategory essc)
 		{
 			SqlParameter[] sp =
@@ -66,10 +83,6 @@ namespace PkTripAPI.Controllers
 			};
 			await DalCRUD.CRUD("SP_UpdateServiceSubCategory", sp);
 		}
-
-
-
-
 
 
 	}

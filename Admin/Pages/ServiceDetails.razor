@@ -1,0 +1,164 @@
+﻿@page "/servicedetails/{fkCatId:int?}/{fkSubCatId:int?}"
+@using Admin.Data;
+@using ClassLibraryEntity;
+@inject IServiceDetailsService serviceDetails;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Service Details</PageTitle>
+
+@if (serviceDet != null)  //if Service Detail is null, form is not accessible
+{
+	<h1>@(serviceDet.pk_ServiceDetailId > 0 ? "Edit Service Details" : "Add Service Details")</h1>
+
+	<EditForm Model="@serviceDet" OnValidSubmit="SaveServiceDetails">
+		<DataAnnotationsValidator />
+
+		<div class="mb-3">
+			<label for="Title" class="form-label">Title</label>
+			<InputText class="form-control" @bind-Value="serviceDet.Title" />
+			<ValidationMessage For="@(() => serviceDet.Title)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="Price" class="form-label">Price</label>
+			<InputNumber class="form-control" @bind-Value="serviceDet.Price" />
+			<ValidationMessage For="@(() => serviceDet.Price)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="Quantity" class="form-label">Quantity</label>
+			<InputNumber class="form-control" @bind-Value="serviceDet.Quantity" />
+			<ValidationMessage For="@(() => serviceDet.Quantity)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="Unit" class="form-label">Unit</label>
+			<InputText class="form-control" @bind-Value="serviceDet.Unit" />
+			<ValidationMessage For="@(() => serviceDet.Unit)" />
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">Save</button>
+			<button class="btn btn-light" @onclick="Cancel">Cancel</button>
+		</div>
+
+	</EditForm>
+}
+else
+{
+	<h1>Service Details List</h1>
+	<button type="button" @onclick="NavigateToAddServiceDetails" class="btn btn-primary">Add Service Details</button>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>ServiceDetails Id</th>
+				<th>Category Id</th>
+				<th>SubCategory Id</th>
+				<th>Title</th>
+				<th>Price</th>
+				<th>Quantity</th>
+				<th>Unit</th>
+				<th>Delete</th>
+				<th>Update</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in ServiceDetailsList)
+			{
+				<tr>
+					<td>@item.pk_ServiceDetailId</td>
+					<td>@item.fk_CategoryId</td>
+					<td>@item.fk_SubCategoryId</td>
+					<td>@item.Title</td>
+					<td>@item.Price</td>
+					<td>@item.Quantity</td>
+					<td>@item.Unit</td>
+					<td><button type="button" @onclick="(async () => await DeleteServiceDetails(item.pk_ServiceDetailId))" class="btn btn-danger">Delete</button></td>
+					<td><button type="button" @onclick="(async () => await NavigateToUpdateServiceDetails(item))" class="btn btn-primary">Edit</button></td>
+@*					<td><button type="button" @onclick="(async () => await NavigateToServiceDetails(item.pk_SubCategoryId))" class="btn btn-primary">Service Details</button></td>
+*@
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+
+	[Parameter]
+	public int fkCatId { get; set; }
+
+	[Parameter]
+	public int fkSubCatId { get; set; }
+
+
+	protected List<EntServiceDetails> ServiceDetailsList = new();
+	protected EntServiceDetails serviceDet;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetServiceDetailsList();
+	}
+
+	protected async Task GetServiceDetailsList()
+	{
+		ServiceDetailsList = await serviceDetails.GetServiceDetails(fkSubCatId);
+	}
+
+	protected async Task DeleteServiceDetails(int id)
+	{
+		bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+		if (confirmed)
+		{
+			await serviceDetails.DeleteServiceDetails(id);
+			await GetServiceDetailsList(); //this will display only specific subcategories linked to previoius pk
+		}
+	}
+	protected async Task NavigateToUpdateServiceDetails(EntServiceDetails entServiceDet)
+	{
+		serviceDet = entServiceDet;
+	}
+	protected void NavigateToAddServiceDetails()
+	{
+		serviceDet = new EntServiceDetails();
+		serviceDet.fk_CategoryId = fkCatId;
+		serviceDet.fk_SubCategoryId = fkSubCatId;
+	}
+	protected async Task SaveServiceDetails()
+	{
+		if (serviceDet != null) // sending request to api if service is not null, if cancel button is pressed , it means service category is null
+		{
+			if (serviceDet.pk_ServiceDetailId > 0) // Existing service category, perform update
+			{
+				if (serviceDet.pk_ServiceDetailId < 1)
+				{
+					return;
+				}
+				await serviceDetails.UpdateServiceDetails(serviceDet);
+			}
+			else
+			{
+				if (serviceDet.pk_ServiceDetailId < 0)
+				{
+					return;
+				}
+				await serviceDetails.SaveServiceDetails(serviceDet);
+			}
+		}
+
+		serviceDet = null; // Reset the service category object after save/update
+		await GetServiceDetailsList();
+	}
+
+	protected async Task Cancel()
+	{
+		serviceDet = null; // Reset the service category object on cancel
+	}
+
+	//protected async Task NavigateToServiceDetails(int ServiceSubCategoryId)
+	//{
+	//	NavigationManager.NavigateTo("/servicesubcategory/" + ServiceSubCategoryId);
+	//}
+}

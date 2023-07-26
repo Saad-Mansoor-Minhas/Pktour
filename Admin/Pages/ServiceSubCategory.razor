@@ -1,0 +1,135 @@
+﻿@page "/servicesubcategory/{id:int?}"
+@using Admin.Data;
+@using ClassLibraryEntity;
+@inject IServiceSubCategoryService serviceSubCategory;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Services Subcategory</PageTitle>
+
+@if (serviceSubCat != null)  //if Service is null, form is not accessible
+{
+	<h1>@(serviceSubCat.pk_SubCategoryId > 0 ? "Edit Service SubCategory" : "Add Service SubCategory")</h1>
+
+	<EditForm Model="@serviceSubCat" OnValidSubmit="SaveServiceSubCategory">
+		<DataAnnotationsValidator />
+
+		<div class="mb-3">
+			<label for="Title" class="form-label">SubService Title</label>
+			<InputText class="form-control" @bind-Value="serviceSubCat.Title" />
+			<ValidationMessage For="@(() => serviceSubCat.Title)" />
+		</div>
+
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">Save</button>
+			<button class="btn btn-light" @onclick="Cancel">Cancel</button>
+		</div>
+
+	</EditForm>
+}
+else
+{
+	<h1>SubCategoryServices List</h1>
+	<button type="button" @onclick="NavigateToAddServiceSubCategory" class="btn btn-primary">Add Service SubCategory</button>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>SubCategory Id</th>
+				<th>Category Id</th>
+				<th>Title</th>
+				<th>Delete</th>
+				<th>Update</th>
+				<th>Service Details</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in ServiceSubCategoryList)
+			{
+				<tr>
+					<td>@item.pk_SubCategoryId</td>
+					<td>@item.fk_CategoryId</td>
+					<td>@item.Title</td>
+					<td><button type="button" @onclick="(async () => await DeleteServiceSubCategory(item.pk_SubCategoryId))" class="btn btn-danger">Delete</button></td>
+					<td><button type="button" @onclick="(async () => await NavigateToUpdateServiceSubCategory(item))" class="btn btn-primary">Edit</button></td>
+					<td><button type="button" @onclick="(async () => await NavigateToServiceDetails(item.fk_CategoryId,item.pk_SubCategoryId))" class="btn btn-primary">Service Details</button></td>
+
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+
+	[Parameter]
+	public int id { get; set; }
+
+	protected List<EntServiceSubCategory> ServiceSubCategoryList = new();
+	protected EntServiceSubCategory serviceSubCat;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetServiceSubCategoryList();
+	}
+
+	protected async Task GetServiceSubCategoryList()
+	{
+		ServiceSubCategoryList = await serviceSubCategory.GetServiceSubCategory(id);
+	}
+
+	protected async Task DeleteServiceSubCategory(int id)
+	{
+		bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+		if (confirmed)
+		{
+			await serviceSubCategory.DeleteServiceSubCategory(id);
+			await GetServiceSubCategoryList(); //this will display only specific subcategories linked to previoius pk
+		}
+	}
+	protected async Task NavigateToUpdateServiceSubCategory(EntServiceSubCategory entServiceSub)
+	{
+		serviceSubCat = entServiceSub;
+	}
+	protected void NavigateToAddServiceSubCategory()
+	{
+		serviceSubCat = new EntServiceSubCategory();
+		serviceSubCat.fk_CategoryId = id;
+	}
+	protected async Task SaveServiceSubCategory()
+	{
+		if (serviceSubCat != null) // sending request to api if service is not null, if cancel button is pressed , it means service category is null
+		{
+			if (serviceSubCat.pk_SubCategoryId > 0) // Existing service category, perform update
+			{
+				if (serviceSubCat.pk_SubCategoryId < 1)
+				{
+					return;
+				}
+				await serviceSubCategory.UpdateServiceSubCategory(serviceSubCat);
+			}
+			else
+			{
+				if (serviceSubCat.pk_SubCategoryId < 0)
+				{
+					return;
+				}
+				await serviceSubCategory.SaveServiceSubCategory(serviceSubCat);
+			}
+		}
+
+		serviceSubCat = null; // Reset the service category object after save/update
+		await GetServiceSubCategoryList();
+	}
+
+	protected async Task Cancel()
+	{
+		serviceSubCat = null; // Reset the service category object on cancel
+	}
+
+	protected async Task NavigateToServiceDetails(int fkCatId,int SubCatId)
+	{
+		NavigationManager.NavigateTo($"/servicedetails/{fkCatId}/{SubCatId}");
+	}
+}

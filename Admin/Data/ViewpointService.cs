@@ -29,5 +29,10 @@ namespace Admin.Data
 		{
 			await _httpClient.DeleteAsync("api/deleteviewpoint/" + id);
 		}
+
+		public async Task<List<EntViewpoints>> GetCityViewpoints(int id)
+		{
+			return await _httpClient.GetFromJsonAsync<List<EntViewpoints>>($"api/getcityviewpoints/{id}");
+		}
 	}
 }

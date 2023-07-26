@@ -11,6 +11,9 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddSingleton<CityService>();
 builder.Services.AddSingleton<ViewpointService>();
+builder.Services.AddSingleton<ServiceCategoryService>();
+builder.Services.AddSingleton<ServiceSubCategoryService>();
+builder.Services.AddSingleton<ServiceDetailsService>();
 
 
 builder.Services.AddHttpClient<ICityService, CityService>(e =>
@@ -21,6 +24,21 @@ builder.Services.AddHttpClient<ICityService, CityService>(e =>
 builder.Services.AddHttpClient<IViewpointService, ViewpointService>(e =>
 {
 	e.BaseAddress = new Uri("http://localhost:5179/");
+});
+
+builder.Services.AddHttpClient<IServiceCategoryService, ServiceCategoryService>(e =>
+{
+	e.BaseAddress = new Uri("http://localhost:5179/");
+});
+
+builder.Services.AddHttpClient<IServiceSubCategoryService, ServiceSubCategoryService>(e =>
+{
+	e.BaseAddress = new Uri("http://localhost:5179/");
+});
+
+builder.Services.AddHttpClient<IServiceDetailsService, ServiceDetailsService>(e =>
+{
+    e.BaseAddress = new Uri("http://localhost:5179/");
 });
 
 

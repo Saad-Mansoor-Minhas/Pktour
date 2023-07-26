@@ -7,7 +7,7 @@
 
 <PageTitle>Viewpoints</PageTitle>
 
-@if (viewpoint != null)  //if city is null, form is not accessible
+@if (viewpoint != null)  //if viewpoint is null, form is not accessible
 {
 	<h1>@(viewpoint.pk_ViewpointId > 0 ? "Edit Viewpoint" : "Add New Viewpoint")</h1>
 
@@ -71,7 +71,6 @@ else
 }
 
 
-
 @code {
 
 	[Parameter]
@@ -87,17 +86,7 @@ else
 
 	protected async Task GetViewpointsList()
 	{
-		List<EntViewpoints> tempViewpoints;
-		tempViewpoints = await viewpointService.GetViewpoints();
-		viewpointsList = new ();
-		foreach(var item in tempViewpoints)
-		{
-			if(item.fk_CityId==id)
-			{
-				viewpointsList.Add(item);
-			}
-		}
-		tempViewpoints = null;
+		viewpointsList = await viewpointService.GetCityViewpoints(id);
 	}
 	protected async Task DeleteViewpoint(int id)
 	{
@@ -119,9 +108,9 @@ else
 	}
 	protected async Task SaveViewpoint()
 	{
-		if (viewpoint != null) // sending request to api if city is not null, if cancel button is pressed , it means city is null
+		if (viewpoint != null) // sending request to api if viewpoint is not null, if cancel button is pressed , it means viewpoint is null
 		{
-			if (viewpoint.pk_ViewpointId > 0) // Existing city, perform update
+			if (viewpoint.pk_ViewpointId > 0) // Existing viewpoint, perform update
 			{
 				if (viewpoint.pk_ViewpointId < 1)
 				{
@@ -141,13 +130,13 @@ else
 			}
 		}
 
-		viewpoint = null; // Reset the city object after save/update
+		viewpoint = null; // Reset the viewpoint object after save/update
 		await GetViewpointsList();
 	}
 
 	protected async Task Cancel()
 	{
-		viewpoint = null; // Reset the city object on cancel
+		viewpoint = null; // Reset the viewpoint object on cancel
 	}
 
 	protected async Task NavigateToViewpoints(int CityId)

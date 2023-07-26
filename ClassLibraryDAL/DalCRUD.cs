@@ -85,8 +85,7 @@ namespace ClassLibraryDAL
                 using (SqlConnection conn = DBHelper.GetConnection())
                 {
                     using (SqlCommand cmd = new SqlCommand(ProcedureName, conn))
-                    {
-						
+                    {					
                         await conn.OpenAsync();
 						cmd.CommandType = CommandType.StoredProcedure;
 						cmd.Parameters.AddRange(sqlParameters);

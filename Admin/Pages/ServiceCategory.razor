@@ -1,0 +1,141 @@
+﻿@page "/servicecategory"
+@using Admin.Data;
+@using ClassLibraryEntity;
+@inject IServiceCategoryService serviceCategory;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Services</PageTitle>
+
+@if (serviceCat != null)  //if Service is null, form is not accessible
+{
+	<h1>@(serviceCat.pk_CategoryId > 0 ? "Edit Service Category" : "Add Service Category")</h1>
+
+	<EditForm Model="@serviceCat" OnValidSubmit="SaveServiceCategory">
+		<DataAnnotationsValidator />
+
+		<div class="mb-3">
+			<label for="Title" class="form-label">Service Title</label>
+			<InputText class="form-control" @bind-Value="serviceCat.Title" />
+			<ValidationMessage For="@(() => serviceCat.Title)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="Type" class="form-label">Type</label>
+			<InputText class="form-control" @bind-Value="serviceCat.Type" />
+			<ValidationMessage For="@(() => serviceCat.Type)" />
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">Save</button>
+			<button class="btn btn-light" @onclick="Cancel">Cancel</button>
+		</div>
+
+	</EditForm>
+}
+else
+{
+	<h1>Services List</h1>
+	<button type="button" @onclick="NavigateToAddServiceCategory" class="btn btn-primary">Add Service Category</button>
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Category Id</th>
+				<th>Title</th>
+				<th>Type </th>
+				<th>Delete</th>
+				<th>Update</th>
+				<th>Sub-Categories</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in ServiceCategoryList)
+			{
+				<tr>
+					<td>@item.pk_CategoryId</td>
+					<td>@item.Title</td>
+					<td>@item.Type</td>
+					<td><button type="button" @onclick="(async () => await DeleteServiceCategory(item.pk_CategoryId))" class="btn btn-danger">Delete</button></td>
+					<td><button type="button" @onclick="(async () => await NavigateToUpdateServiceCategory(item))" class="btn btn-primary">Edit</button></td>
+					<td><button type="button" @onclick="(async () => await NavigateToServiceSubCategory(item.pk_CategoryId))" class="btn btn-primary">SubCategory</button></td>
+
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	protected List<EntServiceCategory> ServiceCategoryList = new();
+	protected EntServiceCategory serviceCat;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetServiceCategoryList();
+	}
+
+	protected async Task GetServiceCategoryList()
+	{
+		ServiceCategoryList = await serviceCategory.GetServiceCategory();
+	}
+
+	protected async Task DeleteServiceCategory(int id)
+	{
+		bool confirmed = await JsRuntime.InvokeAsync<bool>("confirm", "Are you sure?");
+		if (confirmed)
+		{
+			await serviceCategory.DeleteServiceCategory(id);
+			await GetServiceCategoryList();
+		}
+	}
+	protected async Task NavigateToUpdateServiceCategory(EntServiceCategory entService)
+	{
+		serviceCat = entService;
+	}
+	protected void NavigateToAddServiceCategory()
+	{
+		serviceCat = new EntServiceCategory();
+	}
+	protected async Task SaveServiceCategory()
+	{
+		if (serviceCat != null) // sending request to api if service is not null, if cancel button is pressed , it means service category is null
+		{
+			if (serviceCat.pk_CategoryId > 0) // Existing service category, perform update
+			{
+				if (serviceCat.pk_CategoryId < 1)
+				{
+					return;
+				}
+				await serviceCategory.UpdateServiceCategory(serviceCat);
+			}
+			else
+			{
+				if (serviceCat.pk_CategoryId < 0)
+				{
+					return;
+				}
+				await serviceCategory.SaveServiceCategory(serviceCat);
+			}
+		}
+
+		serviceCat = null; // Reset the service category object after save/update
+		await GetServiceCategoryList();
+	}
+
+	protected async Task Cancel()
+	{
+		serviceCat = null; // Reset the service category object on cancel
+	}
+
+	protected async Task NavigateToServiceSubCategory(int ServiceCategoryId)
+	{
+		NavigationManager.NavigateTo("/servicesubcategory/" + ServiceCategoryId);
+	}
+}
+
+
+
+
+
+
