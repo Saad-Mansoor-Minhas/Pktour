@@ -1,0 +1,124 @@
+﻿@page "/registertourguide"
+@using Users.Data;
+@using ClassLibraryEntity;
+@inject ICityService cityService;
+@inject ITGRegistrationService tourGuideService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Cities</PageTitle>
+
+@if(registration.TourGuide.Email!=null)
+{
+    <EmailVerification OnEmailVerified="HandleEmailVerified"></EmailVerification>    
+}
+
+@if (registration != null)
+{
+    <h1>@(registration.TourGuide.pk_TourGuideId > 0 ? "Update Details" : "Register as Tour Guide")</h1>
+
+    <EditForm Model="@registration" OnValidSubmit="SaveCity">
+        <DataAnnotationsValidator />
+
+        <div class="mb-3">
+            <label for="Name" class="form-label">Your Full Name</label>
+            <InputText class="form-control" @bind-Value="registration.TourGuide.Name" />
+            <ValidationMessage For="@(() => registration.TourGuide.Name)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="Email" class="form-label">Email Address</label>
+            <InputText class="form-control" @bind-Value="registration.TourGuide.Email" />
+            <ValidationMessage For="@(() => registration.TourGuide.Email)" />
+        </div>
+
+        <div class="mb-3">
+        <select class="form-control" @onchange="_CityOption">
+            <option value="-1"  selected>--Select City--</option>
+            @if(citiesList!=null)
+            {
+                @foreach(var item in citiesList)
+                {
+                    <option value="@item.pk_CityId"> @item.CityName</option>
+                }
+            }
+        </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="Name" class="form-label">Company Name</label>
+            <InputText class="form-control" @bind-Value="registration.TourGuideCompany.Name" />
+            <ValidationMessage For="@(() => registration.TourGuideCompany.Name)" />
+        </div>
+
+        <div class="mb-3">
+            <label for="Sector" class="form-label">Company Address</label>
+            <InputText class="form-control" @bind-Value="registration.TourGuideCompany.Sector" />
+            <ValidationMessage For="@(() => registration.TourGuideCompany.Sector)" />
+        </div>
+
+        <div class="form-group">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <button class="btn btn-light" @onclick="Cancel">Cancel</button>
+        </div>
+    </EditForm>
+}
+
+
+@code {
+
+    protected RegistrationModel registration;
+
+    private List<EntCities> citiesList = new List<EntCities>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        registration = new RegistrationModel();
+        await GetCitiesList();
+    }
+
+    protected async Task GetCitiesList()
+    {
+        citiesList = await cityService.GetCities();
+    }
+
+    protected void NavigateToRegisterTourGuide()
+    {
+        registration = new RegistrationModel();
+    }
+
+    protected async Task SaveCity()
+    {
+        if (registration != null)
+        {
+            if (registration.TourGuide.pk_TourGuideId > 0)
+            {
+                await tourGuideService.RegisterTourGuide(registration); // for update
+            }
+            else
+            {
+                //tourGuide.RegDate = new DateTime(2002, 10, 18);
+                //tourGuide.RegTime = new TimeOnly(10,20,39);
+                //registration.TourGuide.fk_CityId = 2;
+                await tourGuideService.RegisterTourGuide(registration); // for new registration
+            }
+        }
+        //registration = null;
+        registration = new RegistrationModel(); // Reset the composite model after save/update
+    }
+
+    private void _CityOption(ChangeEventArgs c)
+    {
+        registration.TourGuide.fk_CityId =  int.Parse(c.Value.ToString());        
+    }
+    protected void HandleEmailVerified(string verifiedEmail)
+    {
+        // Save the verified email to your data model or do any other required processing
+        registration.TourGuide.Email = verifiedEmail;
+        StateHasChanged(); // Trigger a re-render to show the verified email in the form
+    }
+    protected void Cancel()
+    {
+        registration = new RegistrationModel(); // Reset the composite model on cancel
+    }
+}

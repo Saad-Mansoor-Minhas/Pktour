@@ -93,9 +93,10 @@ else
 	{
 		serviceCat = entService;
 	}
-	protected void NavigateToAddServiceCategory()
+	protected async Task NavigateToAddServiceCategory()
 	{
-		serviceCat = new EntServiceCategory();
+		await Task.Run(()=>serviceCat = new EntServiceCategory()
+		);
 	}
 	protected async Task SaveServiceCategory()
 	{
@@ -130,7 +131,9 @@ else
 
 	protected async Task NavigateToServiceSubCategory(int ServiceCategoryId)
 	{
-		NavigationManager.NavigateTo("/servicesubcategory/" + ServiceCategoryId);
+		await Task.Run(() => NavigationManager.NavigateTo("/servicesubcategory/" + ServiceCategoryId)
+		);
+
 	}
 }
 

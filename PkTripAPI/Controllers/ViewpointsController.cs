@@ -33,11 +33,8 @@ namespace PkTripAPI.Controllers
 			 new SqlParameter("@pk_CityId", CityId)
 			};
 			contentResult = (ContentResult)await DalCRUD.ReadData("SP_GetCityViewpoints",sqlParameter);
-			if (contentResult != null)
-			{
-				return contentResult;
-			}
-			else { return new ContentResult(); }
+			return contentResult;
+			
 		}
 
 

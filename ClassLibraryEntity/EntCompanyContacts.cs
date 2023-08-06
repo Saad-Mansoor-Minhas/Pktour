@@ -10,8 +10,8 @@ namespace ClassLibraryEntity
     {
          public int pk_CompanyContactId { get; set; }
          public int fk_CompanyId { get; set; }
-         public string ContactType { get; set; }
-         public string  ContactNum { get; set; }
+         public string? ContactType { get; set; }
+         public string?  ContactNum { get; set; }
 
     }
 }

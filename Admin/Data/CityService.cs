@@ -14,11 +14,11 @@ namespace Admin.Data
         {
             _httpClient = httpClient;
         }
-
+		//git test
         public async Task<List<EntCities>> GetCities() {
-            
-           return await _httpClient.GetFromJsonAsync<List<EntCities>>("api/getcities");
-		}
+
+            return await _httpClient.GetFromJsonAsync<List<EntCities>>("api/getcities");
+        }
 
 		public async Task SaveCity(EntCities entity)
 		{

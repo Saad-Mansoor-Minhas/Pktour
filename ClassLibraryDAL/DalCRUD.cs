@@ -62,7 +62,7 @@ namespace ClassLibraryDAL
                             //first write code for getdatatable in CRUD, then this table is send to Dalcustomlogics to get
                             //jsonstring result,then json string will be sent to another function to make actionresult to make string into object 
                         }
-                        else { return null; }
+                        else { return new ContentResult { Content = "", ContentType = "application/json" }; }
                     }
 
                 }
@@ -70,9 +70,9 @@ namespace ClassLibraryDAL
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception Occurred: {ex.Message}");
-                return null;
+				return new ContentResult { Content = "", ContentType = "application/json" };
 
-            }
+			}
 
         }
 
@@ -99,7 +99,11 @@ namespace ClassLibraryDAL
                             string json = DalCustomLogics.DataTableToJSONWithJSONNet(dt);
                             return new ContentResult { Content = json, ContentType = "application/json" };
          }
-                        else { return null; }
+                        else {
+
+                            dt=new DataTable();
+							string json = DalCustomLogics.DataTableToJSONWithJSONNet(dt);
+							return new ContentResult { Content = json, ContentType = "application/json" }; }
                     }
 
                 }
@@ -107,9 +111,9 @@ namespace ClassLibraryDAL
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception Occurred: {ex.Message}");
-                return null;
+                return new ContentResult { Content = "", ContentType = "application/json" };
 
-            }
+			}
 
         }
 

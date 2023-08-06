@@ -90,7 +90,8 @@ else
 	}
 	protected async Task NavigateToUpdateServiceSubCategory(EntServiceSubCategory entServiceSub)
 	{
-		serviceSubCat = entServiceSub;
+		await Task.Run(() =>serviceSubCat = entServiceSub);
+
 	}
 	protected void NavigateToAddServiceSubCategory()
 	{
@@ -125,11 +126,14 @@ else
 
 	protected async Task Cancel()
 	{
-		serviceSubCat = null; // Reset the service category object on cancel
+		await Task.Run(() => serviceSubCat = null);
+		 // Reset the service category object on cancel
 	}
 
 	protected async Task NavigateToServiceDetails(int fkCatId,int SubCatId)
 	{
-		NavigationManager.NavigateTo($"/servicedetails/{fkCatId}/{SubCatId}");
+		await Task.Run(() => NavigationManager.NavigateTo($"/servicedetails/{fkCatId}/{SubCatId}")
+		);
+
 	}
 }

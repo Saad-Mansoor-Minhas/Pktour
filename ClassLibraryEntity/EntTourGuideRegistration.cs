@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,16 +11,16 @@ namespace ClassLibraryEntity
     {
         public int pk_TourGuideId { get; set; }
         public int fk_CityId { get; set; }
-        public string Name { get; set; }
-        public  string CNIC { get; set; }
-        public string DOB { get; set; }
-        public string Gender { get; set; }
-        public string Sector { get; set; }
-        public double Longitude { get; set; }
-        public double Latitude { get; set; }
-        public string RegDate { get; set; }
-        public string RegTime { get; set;}
-        public bool RegStatus { get; set;}
+        public string? Name { get; set; }
+        public  string? CNIC { get; set; }
+        public DateTime? DOB { get; set; }
+        public string? Gender { get; set; }
+        public string? Sector { get; set; } 
+        public string? Email { get; set; }
+        public DateTime? RegDate { get; set; }
+        public TimeOnly? RegTime { get; set;}
+        public bool? RegStatus { get; set;}
+		public List<EntTourGuideContacts> Contacts { get; set; } = new List<EntTourGuideContacts>();
 
-    }
+	}
 }

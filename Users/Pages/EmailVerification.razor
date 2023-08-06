@@ -1,0 +1,225 @@
+﻿@page "/email"
+@using System.Net.Mail;
+@inject NavigationManager NavigationManager
+<h3>Email Verification</h3>
+
+<EditForm Model="@me" OnSubmit="SendMail">
+    @if (me.UserEmail == null)
+    {
+        <InputText @bind-Value="me.UserEmail"></InputText>
+    }
+    else
+    {
+        <InputText @bind-Value="me.EnteredCode"></InputText>
+    }
+    <button type="submit">@ButtonTitle</button>
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p style="color: red;">@errorMessage</p>
+    }
+</EditForm>
+
+@code {
+    class ModelEmail
+    {
+        public  string? NewNumber { get; set; }
+        public  string? UserEmail { get; set; }
+        public string MessageFrom { get; } = "noreply.tourpk@gmail.com";
+        public string AppPassword { get; } = "crulupbvkvdxrnmf";
+        public string? EnteredCode { get; set; }
+    }
+
+    [Parameter] public EventCallback<string> OnEmailVerified { get; set; }
+
+    public string ButtonTitle = "Send Code";
+    ModelEmail me = new ModelEmail();
+    private void GenerateCode()
+    {
+        Random rnd = new Random();
+        me.NewNumber = rnd.Next(10000, 99999).ToString();
+    }
+
+    private string errorMessage = "";
+
+    public async void SendMail()
+    {
+
+        if (me.EnteredCode != null)
+        {
+            if (me.EnteredCode == me.NewNumber)
+            {
+                await OnEmailVerified.InvokeAsync(me.UserEmail);
+                NavigationManager.NavigateTo("/registertourguide");
+            }
+            else
+            {
+                errorMessage = "Incorrect verification code. Please try again.";
+            }
+        }
+        else
+        {
+            if(!string.IsNullOrEmpty(me.UserEmail))
+            {
+                GenerateCode();
+                MailMessage mail = new MailMessage();
+                mail.To.Add(me.UserEmail);
+                mail.From = new MailAddress(me.MessageFrom, "TourPK");
+                mail.Subject = "Verification Code";
+                mail.Body = $"Your verification code is {me.NewNumber}";
+                mail.IsBodyHtml = true;
+                SmtpClient smtp = new SmtpClient
+                    {
+                        UseDefaultCredentials = false,
+                        EnableSsl = true,
+                        Host = "smtp.gmail.com",
+                        Port = 587,
+                        DeliveryMethod = SmtpDeliveryMethod.Network,
+                        Credentials = new System.Net.NetworkCredential(me.MessageFrom, me.AppPassword)
+                    };
+                smtp.Send(mail);
+                ButtonTitle = "Verify";
+            }
+            else
+            {
+                errorMessage = "Please enter email address.";
+            }
+            
+        }
+    }
+}
+
+
+
+
+
+@*@page "/email"
+@using System.Net.Mail;
+@inject NavigationManager NavigationManager
+<h3>Email Verification</h3>
+
+<div class="container">
+    @if (string.IsNullOrEmpty(me.EnteredCode))
+    {
+        @if (string.IsNullOrEmpty(me.UserEmail))
+        {
+            <p>Please enter your email address:</p>
+            <InputText class="email-input" @bind-Value="me.UserEmail"></InputText>
+            <button class="send-button" @onclick="SendCode">Send Code</button>
+        }
+        else
+        {
+            <p>A verification code has been sent to: @me.UserEmail</p>
+            <p>Please check your email and enter the code below:</p>
+            <InputText class="code-input" @bind-Value="me.EnteredCode"></InputText>
+            <button class="verify-button" @onclick="VerifyCode">Verify Code</button>
+        }
+    }
+    else
+    {
+        <p style="color: green;">Code verified! You will be redirected shortly.</p>
+    }
+
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="error-message">@errorMessage</p>
+    }
+</div>
+
+<style>
+    .container {
+        max-width: 400px;
+        margin: 0 auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .email-input,
+    .code-input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 10px;
+    }
+
+    .send-button,
+    .verify-button {
+        background-color: #007bff;
+        color: #fff;
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+
+    .error-message {
+        color: red;
+        font-weight: bold;
+    }
+</style>
+
+@code {
+    class ModelEmail
+    {
+        public string? NewNumber { get; set; }
+        public string? UserEmail { get; set; }
+        public string MessageFrom { get; } = "noreply.tourpk@gmail.com";
+        public string AppPassword { get; } = "crulupbvkvdxrnmf";
+        public string? EnteredCode { get; set; }
+    }
+
+    ModelEmail me = new ModelEmail();
+
+    private void GenerateCode()
+    {
+        Random rnd = new Random();
+        me.NewNumber = rnd.Next(10000, 99999).ToString();
+    }
+
+    private string errorMessage = "";
+
+    public void SendCode()
+    {
+        if (string.IsNullOrEmpty(me.UserEmail))
+        {
+            errorMessage = "Please enter your email address.";
+            return;
+        }
+
+        GenerateCode();
+        SendMail();
+    }
+
+    public void VerifyCode()
+    {
+        if (me.EnteredCode == me.NewNumber)
+        {
+            NavigationManager.NavigateTo("/registertourguide");
+        }
+        else
+        {
+            errorMessage = "Incorrect verification code. Please try again.";
+        }
+    }
+
+    public void SendMail()
+    {
+        MailMessage mail = new MailMessage();
+        mail.To.Add(me.UserEmail);
+        mail.From = new MailAddress(me.MessageFrom, "TourPK");
+        mail.Subject = "Verification Code";
+        mail.Body = $"Your verification code is {me.NewNumber}";
+        mail.IsBodyHtml = true;
+        SmtpClient smtp = new SmtpClient
+            {
+                UseDefaultCredentials = false,
+                EnableSsl = true,
+                Host = "smtp.gmail.com",
+                Port = 587,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                Credentials = new System.Net.NetworkCredential(me.MessageFrom, me.AppPassword)
+            };
+        smtp.Send(mail);
+    }
+}*@
+

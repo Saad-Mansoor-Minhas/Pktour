@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using System.Data.SqlClient;
 using System.Data;
 using Newtonsoft.Json;
+using System.Web.Helpers;
 
 
 namespace PkTripAPI.Controllers
@@ -15,11 +16,11 @@ namespace PkTripAPI.Controllers
 	public class TourGuideRegistrationController : ControllerBase
 	{
 		[HttpGet]
-		[Route("gettourguideregistration")]
+		[Route("gettourguidesinfo")]
 		public async Task<ActionResult> GetTourGuideRegistration()
 		{
 			ContentResult result = new ContentResult();
-			result = (ContentResult)await DalCRUD.ReadData("SP_GetTourGuideRegistration");
+			result = (ContentResult)await DalCRUD.ReadData("SP_GetTourGuidesInfo");
 			if (result != null)
 			{
 				return result;
@@ -29,24 +30,22 @@ namespace PkTripAPI.Controllers
 
 
 		[HttpPost]
-		[Route("savetourguideregistration")]
-		public async Task SaveTourGuideRegistration(EntTourGuideRegistration etgr)
+		[Route("registertourguide")]
+		public async Task SaveTourGuideRegistration(RegistrationModel registration)
 		{
 			SqlParameter[] sp =
 			{
-				new SqlParameter("@fk_CityId",etgr.fk_CityId),
-				new SqlParameter("@Name",etgr.Name),
-				new SqlParameter("@CNIC",etgr.CNIC),
-				new SqlParameter("@DOB",etgr.DOB),
-				new SqlParameter("@Gender",etgr.Gender),
-				new SqlParameter("@Sector",etgr.Sector),
-				new SqlParameter("@Name",etgr.Name),
-				new SqlParameter("@CNIC",etgr.CNIC),
-				new SqlParameter("@DOB",etgr.DOB),
-				new SqlParameter("@Gender",etgr.Gender),
-				new SqlParameter("@Sector",etgr.Sector)
+                new SqlParameter("@fk_CityId",registration.TourGuide.fk_CityId),
+				new SqlParameter("@FullName",registration.TourGuide.Name),
+				new SqlParameter("@Email",registration.TourGuide.Email),
+				new SqlParameter("@CompanyName",registration.TourGuideCompany.Name),
+				new SqlParameter("@CompanySector",registration.TourGuideCompany.Sector),
+				//new SqlParameter("@DOB",etgr.DOB.ToString()),
+				//new SqlParameter("@RegDate",etgr.RegDate),
+				//new SqlParameter("@RegTime",etgr.RegTime),
+				//new SqlParameter("@RegStatus",etgr.RegStatus)
 			};
-			await DalCRUD.CRUD("SP_SaveTourGuideRegistration", sp);
+			await DalCRUD.CRUD("SP_TourGuideRegistration", sp);
 		}
 
 
@@ -77,19 +76,13 @@ namespace PkTripAPI.Controllers
 				new SqlParameter("@DOB",etgr.DOB),
 				new SqlParameter("@Gender",etgr.Gender),
 				new SqlParameter("@Sector",etgr.Sector),
-				new SqlParameter("@Name",etgr.Name),
-				new SqlParameter("@CNIC",etgr.CNIC),
-				new SqlParameter("@DOB",etgr.DOB),
-				new SqlParameter("@Gender",etgr.Gender),
-				new SqlParameter("@Sector",etgr.Sector)
+				new SqlParameter("@RegDate",etgr.RegDate),
+				new SqlParameter("@RegTime",etgr.RegTime),
+				new SqlParameter("@RegStatus",etgr.RegStatus)
 			};
 			await DalCRUD.CRUD("SP_UpdateTourGuideRegistration", sp);
 		}
 
-
-
-
-
-
 	}
+
 }
