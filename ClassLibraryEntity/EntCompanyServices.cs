@@ -9,9 +9,8 @@ namespace ClassLibraryEntity
     public class EntCompanyServices
     {
         public int pk_CompanyServiceId { get; set; }
-        public int fk_CategoryId { get; set; }
-        public int fk_SubCategoryId { get; set; }
-        public int fk_ServiceDetailId { get; set; }
+        public int fk_CompanyId { get; set; }	
+        public string? ServicesDescription { get; set; }
 
     }
 }

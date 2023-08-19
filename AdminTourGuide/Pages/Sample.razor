@@ -1,0 +1,236 @@
+﻿@page "/sample"
+@using Newtonsoft.Json;
+@inject IServiceCategoryService serviceCategory;
+@inject IServiceSubCategoryService serviceSubCategory;
+@inject IServiceDetailsService serviceDetails;
+@inject ICompanyServicesService companyService;
+@inject NavigationManager NavigationManager
+
+<h3>Sample</h3>
+
+<select class="form-control" @onchange="_CategoryChanged">
+	<option value="-1" selected>--Select Category--</option>
+	@if (categoryList != null)
+	{
+		@foreach (var item in categoryList)
+		{
+			<option value="@item.pk_CategoryId"> @item.Title</option>
+		}
+	}
+</select>
+
+<select class="form-control" @onchange="_SubCategoryChanged">
+	<option value="-1" selected>--select Subcategory--</option>
+	@if (subCategoryFilteredList != null)
+	{
+		@foreach (var item in subCategoryFilteredList)
+		{
+			<option value="@item.pk_SubCategoryId"> @item.Title</option>
+		}
+	}
+</select>
+
+<br>
+
+@if (detailsFilteredList != null)
+{
+
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Service Title </th>
+				<th>Price</th>
+				<th>Checklist</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in detailsFilteredList)
+			{
+				<tr>
+					<td>@item.Title</td>
+					<td>@item.Price</td>
+					<td><button type="button" class="btn btn-primary" @onclick="()=>ManageDictionary(item)">+</button></td>
+				</tr>
+
+			}
+		</tbody>
+	</table>
+}
+
+
+<hr />
+
+<ol>
+
+	@foreach (var pair in listSer)
+	{
+		<li>@pair.Key</li>
+		<li class="nav-link">
+			<table class="table">
+				<tbody>
+					@foreach (var item in pair.Value)
+					{
+						<tr>
+							<td>
+								@item.ServiceTitle
+							</td>
+							<td>
+								<button type="button" class="btn btn-primary" @onclick="() => RemoveFromDictionary(pair.Key, item.ServiceTitle)">-</button>
+
+							</td>
+						</tr>
+
+
+					}
+				</tbody>
+
+			</table>
+		</li>
+	}
+
+</ol>
+
+
+<button type="button" class="btn btn-primary" @onclick="SaveDict">Save List</button>
+
+
+@code {
+
+	List<EntServiceCategory> categoryList = new List<EntServiceCategory>();
+	List<EntServiceSubCategory> subCategoryFilteredList = new List<EntServiceSubCategory>();
+	List<EntServiceDetails> detailsFilteredList = new List<EntServiceDetails>();
+
+	int SelectedCategoryId { get; set; }
+	int SelectedSubCategoryId { get; set; }
+
+
+	string? title { get; set; } = "some data";
+	int _Price { get; set; } = 20;
+	string? cid { get; set; }
+	string? cat { get; set; } = "cat 1";
+
+
+	class Services
+	{
+		public string? ServiceTitle { get; set; }
+		public int Price { get; set; }
+	}
+
+	Dictionary<string, List<Services>> listSer = new Dictionary<string, List<Services>>();
+	List<Services> ServicesList = new List<Services>();
+	EntCompanyServices entCompanyServices = new EntCompanyServices();
+
+	void ManageDictionary(EntServiceDetails sd)
+	{
+		ServicesList.Add(new Services { ServiceTitle = sd.Title, Price = _Price });
+		if (listSer.ContainsKey(cat))
+		{
+			listSer[cat].AddRange(ServicesList.ToList());
+		}
+		else
+		{
+			listSer.Add(cat, ServicesList.ToList());
+		}
+		ServicesList = new List<Services>();
+	}
+
+
+	private void RemoveFromDictionary(string category, string serviceTitle)
+	{
+		if (listSer.ContainsKey(category))
+		{
+			var services = listSer[category];
+			var serviceToRemove = services.FirstOrDefault(s => s.ServiceTitle == serviceTitle);
+
+			if (serviceToRemove != null)
+			{
+				services.Remove(serviceToRemove);
+
+				if (services.Count == 0)
+				{
+					listSer.Remove(category);
+				}
+			}
+		}
+	}
+
+
+	List<EntCompanyServices> CompanyServicesList = new List<EntCompanyServices>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		categoryList = await serviceCategory.GetServiceCategory();
+		CompanyServicesList = await companyService.GetCompanyServices(89822974);
+		if(CompanyServicesList.Count!=0)
+		{
+			listSer = JsonConvert.DeserializeObject<Dictionary<string, List<Services>>>(CompanyServicesList[0].ServicesDescription);
+
+		}
+
+	}
+
+	private async void SaveDict()
+	{
+
+		int companyid = 89822974;
+		//serialization
+		string jsonstring = string.Empty;
+		jsonstring = JsonConvert.SerializeObject(listSer);
+
+		entCompanyServices.fk_CompanyId = companyid;
+		entCompanyServices.ServicesDescription = jsonstring;
+
+		await companyService.SaveCompanyServices(entCompanyServices);
+		NavigationManager.NavigateTo("/");
+	}
+
+	private async Task _CategoryChanged(ChangeEventArgs c)
+	{
+		int value = int.Parse(c.Value.ToString());
+		if (value != -1)
+		{
+			ClearList();
+			SelectedSubCategoryId = -1;
+			subCategoryFilteredList.Clear();
+			detailsFilteredList.Clear();
+			cat = value.ToString();
+			SelectedCategoryId = value;
+
+			await FilterSubCategories();
+
+		}
+		else
+		{
+			subCategoryFilteredList.Clear();
+			SelectedSubCategoryId = -1;
+		}
+
+	}
+
+	private async Task FilterSubCategories()
+	{
+		subCategoryFilteredList = await serviceSubCategory.GetServiceSubCategory(SelectedCategoryId);
+	}
+
+	private async Task _SubCategoryChanged(ChangeEventArgs c)
+	{
+		int value = int.Parse(c.Value.ToString());
+		if (value != -1)
+		{
+			SelectedSubCategoryId = value;
+			await FilterServiceDetails();
+		}
+	}
+
+	private async Task FilterServiceDetails()
+	{
+		detailsFilteredList = await serviceDetails.GetServiceDetails(SelectedSubCategoryId);
+	}
+	void ClearList()
+	{
+		ServicesList.Clear();
+	}
+	/// <summary>
+	///  
+	/// </summary>
+}

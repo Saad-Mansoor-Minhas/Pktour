@@ -1,0 +1,16 @@
+﻿@page "/testing"
+@inject NavigationManager NavigationManager
+<button @onclick="VerifyEmail">Verify Email</button>
+
+@code {
+    [Parameter] public EventCallback<string> OnEmailVerified { get; set; }
+
+    private async Task VerifyEmail()
+    {
+        // Simulate email verification process
+        string verifiedEmail = "verified@example.com";
+        await OnEmailVerified.InvokeAsync(verifiedEmail);
+        NavigationManager.NavigateTo("/test1");
+    }
+}
+

@@ -1,0 +1,165 @@
+﻿@page "/company"
+@inject ICityService cityService
+@inject IAreaService areaService
+@inject ICompanyRegistrationService companyRegistrationServive
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Company Registration</PageTitle>
+
+@if (companyRegistration != null)  //if viewpoint is null, form is not accessible
+{
+	<h1>@(companyRegistration.pk_CompanyId > 0 ? "Edit Company Details" : "Add New Company")</h1>
+
+	<EditForm Model="@companyRegistration" OnValidSubmit="SaveCompany">
+		<DataAnnotationsValidator />
+
+		<div class="mb-3">
+			<InputText class="form-control" @bind-Value="companyRegistration.Name" placeholder="Enter Company Name" />
+			<ValidationMessage For="@(() => companyRegistration.Name)" />
+		</div>
+		<div class="mb-3">
+			<InputText class="form-control" @bind-Value="companyRegistration.Email" placeholder="Enter Email Address" />
+			<ValidationMessage For="@(() => companyRegistration.Email)" />
+		</div>
+
+
+
+		<div class="mb-3">
+
+			<InputSelect class="form-control" @bind-Value="companyRegistration.fk_CityId">
+				<option selected value="0">--Select City--</option>
+				@foreach (var item in citiesList)
+				{
+					@if (item.pk_CityId == companyRegistration.fk_CityId)
+					{
+						<option selected value="@item.pk_CityId"> @item.CityName</option>
+					}
+					else
+					{
+						<option value="@item.pk_CityId"> @item.CityName</option>
+					}
+				}
+
+			</InputSelect>
+
+		</div>
+
+
+		<div class="mb-3">
+			<select class="form-control" @onchange="_AreaOption">
+				<option value="-1" selected>--Select Area--</option>
+				@if (citiesList != null)
+				{
+					@foreach (var item in areasList)
+					{
+						<option value="@item.pk_AreaId"> @item.AreaName</option>
+					}
+				}
+			</select>
+		</div>
+
+
+		<div class="mb-3">
+			<InputText class="form-control" @bind-Value="companyRegistration.Address" placeholder="Enter Address" />
+			<ValidationMessage For="@(() => companyRegistration.fk_AreaId)" />
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">Save</button>
+			<button class="btn btn-light" @onclick="Cancel">Cancel</button>
+		</div>
+	</EditForm>
+}
+else
+{
+
+
+	<h1>Companies List</h1>
+	<button type="button" @onclick="NavigateToAddNewCompany" class="btn btn-primary">Add Company</button>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Comapny Id</th>
+				<th>TourGuide Id </th>
+				<th>Company Name</th>
+				<th>Email</th>
+				<th>City Id</th>
+				<th>Area Id</th>
+				<th>Address</th>
+				<th>Website</th>
+				<th>Facebook</th>
+				<th>Instagram</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in companiesList)
+			{
+				<tr>
+					<td>@item.pk_CompanyId</td>
+					<td>@item.fk_TourGuideId</td>
+					<td>@item.Name</td>
+					<td>@item.Email</td>
+					<td>@item.fk_CityId</td>
+					<td>@item.fk_AreaId</td>
+					<td>@item.Address</td>
+					<td>@item.Website</td>
+					<td>@item.Facebook</td>
+					<td>@item.Instagram</td>
+					<td><button type="button" @onclick="(async () => await NavigateToUpdateCompany(item))" class="btn btn-primary">Edit</button></td>
+
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code
+{
+	private List<EntCompanyRegistration> companiesList = new List<EntCompanyRegistration>();
+	protected int tourGuideId = 20785950;
+	private EntCompanyRegistration companyRegistration { get; set; }
+	protected List<EntAreas> areasList = new List<EntAreas>();
+	private List<EntCities> citiesList = new List<EntCities>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetCompaniesList();
+	}
+	private void NavigateToAddNewCompany()
+	{
+		companyRegistration = new EntCompanyRegistration();
+	}
+	private async Task NavigateToUpdateCompany(EntCompanyRegistration entCompany)
+	{
+		companyRegistration = entCompany;
+	}
+	private async Task GetCompaniesList()
+	{
+		companiesList = await companyRegistrationServive.GetTourGuideCompanies(tourGuideId);
+		citiesList = await cityService.GetCities();
+		areasList = await areaService.GetAreas();
+	}
+
+	private void _CityOption(ChangeEventArgs c)
+	{
+		companyRegistration.fk_CityId = int.Parse(c.Value.ToString());
+	}
+
+	private void _AreaOption(ChangeEventArgs a)
+	{
+		companyRegistration.fk_AreaId = int.Parse(a.Value.ToString());
+	}
+	private async Task SaveServices()
+	{
+
+	}
+	private async Task SaveCompany()
+	{
+
+	}
+	protected void Cancel()
+	{
+		companyRegistration = null; // Reset the viewpoint object on cancel
+	}
+}

@@ -7,7 +7,6 @@ using System.Data.SqlClient;
 using System.Data;
 using Newtonsoft.Json;
 
-
 namespace PkTripAPI.Controllers
 {
 
@@ -36,13 +35,11 @@ namespace PkTripAPI.Controllers
 			new SqlParameter("@RegDate",obj.RegDate),
 			new SqlParameter("@fk_TourGuideId",obj.fk_TourGuideId),
 			new SqlParameter("@Name",obj.Name),
-			new SqlParameter("@CompanyLatitude",obj.CompanyLatitude),
-			new SqlParameter("@CompanyLongitude",obj.CompanyLongitude),
 			new SqlParameter("@Instagram",obj.Instagram),
 			new SqlParameter("@Facebook",obj.Facebook),
 			new SqlParameter("@RegStatus",obj.RegStatus),
 			new SqlParameter("@RegTime",obj.RegTime),
-			new SqlParameter("@Sector",obj.Sector),
+			new SqlParameter("@Sector",obj.fk_AreaId),
 			new SqlParameter("@Website",obj.Website)
 
 			};
@@ -71,13 +68,13 @@ namespace PkTripAPI.Controllers
 				new SqlParameter("@RegDate",obj.RegDate),
 				new SqlParameter("@fk_TourGuideId",obj.fk_TourGuideId),
 				new SqlParameter("@Name",obj.Name),
-				new SqlParameter("@CompanyLatitude",obj.CompanyLatitude),
-				new SqlParameter("@CompanyLongitude",obj.CompanyLongitude),
+				new SqlParameter("@CompanyAddress", obj.Address),
+				new SqlParameter("@CompanyAddress", obj.Address),
 				new SqlParameter("@Instagram",obj.Instagram),
 				new SqlParameter("@Facebook",obj.Facebook),
 				new SqlParameter("@RegStatus",obj.RegStatus),
 				new SqlParameter("@RegTime",obj.RegTime),
-				new SqlParameter("@Sector",obj.Sector),
+				new SqlParameter("@Sector",obj.fk_AreaId),
 				new SqlParameter("@Website",obj.Website)
 			};
 			await DalCRUD.CRUD("SP_UpdateCompanyRegistration", sp);

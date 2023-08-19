@@ -76,8 +76,8 @@ else
 	[Parameter]
 	public int id { get; set; }
 
-	protected List<EntViewpoints> viewpointsList = new();
-	protected EntViewpoints viewpoint;
+	protected List<EntViewpoints> viewpointsList = new List<EntViewpoints>();
+	protected EntViewpoints? viewpoint;
 
 	protected override async Task OnInitializedAsync()
 	{
@@ -99,7 +99,7 @@ else
 	}
 	protected async Task NavigateToUpdateViewpoint(EntViewpoints ent)
 	{
-		viewpoint = ent;
+		await Task.Run(() => viewpoint = ent);
 	}
 	protected void NavigateToAddViewpoint()
 	{
@@ -116,7 +116,6 @@ else
 				{
 					return;
 				}
-				//viewpoint.fk_CityId = id;
 				await viewpointService.UpdateViewpoint(viewpoint);
 			}
 			else // New city, perform save
@@ -134,13 +133,14 @@ else
 		await GetViewpointsList();
 	}
 
-	protected async Task Cancel()
+	protected void Cancel()
 	{
 		viewpoint = null; // Reset the viewpoint object on cancel
 	}
 
-	protected async Task NavigateToViewpoints(int CityId)
+
+	protected void NavigateToViewpoints(int CityId)
 	{
-		NavigationManager.NavigateTo("/viewpoints");
+		 NavigationManager.NavigateTo("/viewpoints");
 	}
 }

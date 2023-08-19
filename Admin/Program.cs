@@ -14,7 +14,7 @@ builder.Services.AddSingleton<ViewpointService>();
 builder.Services.AddSingleton<ServiceCategoryService>();
 builder.Services.AddSingleton<ServiceSubCategoryService>();
 builder.Services.AddSingleton<ServiceDetailsService>();
-
+builder.Services.AddSingleton<TourGuideRegistrationService>();
 
 builder.Services.AddHttpClient<ICityService, CityService>(e =>
 {
@@ -39,6 +39,11 @@ builder.Services.AddHttpClient<IServiceSubCategoryService, ServiceSubCategorySer
 builder.Services.AddHttpClient<IServiceDetailsService, ServiceDetailsService>(e =>
 {
     e.BaseAddress = new Uri("http://localhost:5179/");
+});
+
+builder.Services.AddHttpClient<ITourGuideRegistrationService, TourGuideRegistrationService>(e =>
+{
+	e.BaseAddress = new Uri("http://localhost:5179/");
 });
 
 

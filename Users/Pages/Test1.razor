@@ -1,0 +1,15 @@
+﻿@page "/test1"
+
+<Testing OnEmailVerified="HandleEmailVerified" />
+
+<h1>Email: @verifiedEmail</h1>
+
+@code {
+    private string verifiedEmail;
+
+    private void HandleEmailVerified(string email)
+    {
+        verifiedEmail = email;
+        StateHasChanged(); // Trigger UI re-render
+    }
+}

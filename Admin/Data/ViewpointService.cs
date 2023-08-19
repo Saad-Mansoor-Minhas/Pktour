@@ -1,4 +1,5 @@
 ﻿using ClassLibraryEntity;
+using System.Collections.Generic;
 using System.Net.Http.Json;
 
 namespace Admin.Data
@@ -32,7 +33,9 @@ namespace Admin.Data
 
 		public async Task<List<EntViewpoints>> GetCityViewpoints(int id)
 		{
-			return await _httpClient.GetFromJsonAsync<List<EntViewpoints>>($"api/getcityviewpoints/{id}");
+			List<EntViewpoints>? entViewpoints = new List<EntViewpoints>();
+			entViewpoints= await _httpClient.GetFromJsonAsync<List<EntViewpoints>>($"api/getcityviewpoints/{id}");
+			return entViewpoints;
 		}
 	}
 }

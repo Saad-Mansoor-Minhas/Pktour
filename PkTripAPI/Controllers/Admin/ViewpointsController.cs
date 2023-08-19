@@ -4,7 +4,7 @@ using ClassLibraryDAL;
 using System.Xml.Linq;
 using System.Data.SqlClient;
 
-namespace PkTripAPI.Controllers
+namespace PkTripAPI.Controllers.Admin
 {
     [Route("api/")]
     [ApiController]
@@ -24,24 +24,21 @@ namespace PkTripAPI.Controllers
         }
 
 
-	    [HttpGet]
-		[Route("getcityviewpoints/{CityId}")]
-		public async Task<ActionResult> GetViewpoints(int CityId)
-		{
-			ContentResult contentResult = new ContentResult();
-			SqlParameter[] sqlParameter = {
-			 new SqlParameter("@pk_CityId", CityId)
-			};
-			contentResult = (ContentResult)await DalCRUD.ReadData("SP_GetCityViewpoints",sqlParameter);
-			if (contentResult != null)
-			{
-				return contentResult;
-			}
-			else { return new ContentResult(); }
-		}
+        [HttpGet]
+        [Route("getcityviewpoints/{CityId}")]
+        public async Task<ActionResult> GetViewpoints(int CityId)
+        {
+            ContentResult contentResult = new ContentResult();
+            SqlParameter[] sqlParameter = {
+             new SqlParameter("@pk_CityId", CityId)
+            };
+            contentResult = (ContentResult)await DalCRUD.ReadData("SP_GetCityViewpoints", sqlParameter);
+            return contentResult;
+
+        }
 
 
-		[HttpPost]
+        [HttpPost]
         [Route("saveviewpoint")]
         public void SaveViewpoint(EntViewpoints viewpoint)
         {

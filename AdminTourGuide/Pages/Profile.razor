@@ -1,0 +1,135 @@
+﻿@page "/profile"
+@inject ICityService cityService;
+@inject NavigationManager NavigationManager
+@inject ITGRegistrationService tourGuideService
+
+<PageTitle>Profile</PageTitle>
+
+<EditForm Model="@tourGuide" OnValidSubmit="UpdateProfile">
+	<DataAnnotationsValidator />
+
+	<div class="mb-3">
+		<label for="Name" class="form-label">Your Full Name</label>
+		<InputText class="form-control" @bind-Value="tourGuide.Name" />
+		<ValidationMessage For="@(() => tourGuide.Name)" />
+	</div>
+
+	<div class="mb-3">
+		<label for="Email" class="form-label">Email Address</label>
+		<InputText class="form-control" @bind-Value="tourGuide.Email" readonly="true" />
+		<ValidationMessage For="@(() => tourGuide.Email)" />
+	</div>
+
+	<div class="mb-3">
+		<label for="CNIC" class="form-label">CNIC</label>
+		<InputText class="form-control" @bind-Value="tourGuide.CNIC" />
+		<ValidationMessage For="@(() => tourGuide.CNIC)" />
+	</div>
+
+	<div class="mb-3">
+		<label for="DOB" class="form-label">Date of Birth</label>
+		<InputDate class="form-control" @bind-Value="tourGuide.DOB" />
+		<ValidationMessage For="@(() => tourGuide.DOB)" />
+	</div>
+
+	<div class="mb-3">
+		<label for="Gender" class="form-label">Gender</label>
+		<InputText class="form-control" @bind-Value="tourGuide.Gender" />
+		<ValidationMessage For="@(() => tourGuide.Gender)" />
+	</div>
+
+	<div class="mb-3">
+
+		<InputSelect class="form-control" @bind-Value="tourGuide.fk_CityId" required>
+			<option selected value="null">--Select City--</option>
+			@foreach (var item in citiesList)
+			{
+				@if (item.pk_CityId == tourGuide.fk_CityId)
+				{
+					<option selected value="@item.pk_CityId"> @item.CityName</option>
+				}
+				else
+				{
+					<option value="@item.pk_CityId"> @item.CityName</option>
+				}
+			}
+		</InputSelect>
+		</div>
+
+	@*<select class="form-control" @onchange="_CityOption">
+	<option value="-1" selected>--Select City--</option>
+	@if (citiesList != null)
+	{
+	@foreach (var item in citiesList)
+	{
+	if (item.pk_CityId == tourGuide.fk_CityId)
+	{
+	<option selected value="@item.pk_CityId"> @item.CityName</option>
+	}
+	else
+	{
+	<option value="@item.pk_CityId"> @item.CityName</option>
+	}
+
+	}
+	}
+	</select>*@
+
+
+	<div class="mb-3">
+		<label for="Sector" class="form-label">Sector</label>
+		<InputText class="form-control" @bind-Value="tourGuide.Sector" />
+		<ValidationMessage For="@(() => tourGuide.Sector)" />
+	</div>
+
+	<div class="form-group">
+		<button type="submit" class="btn btn-primary">Save</button>
+		<button class="btn btn-light" @onclick="Cancel">Cancel</button>
+	</div>
+
+</EditForm>
+
+@code {
+
+	protected EntTourGuideRegistration tourGuide = new EntTourGuideRegistration();
+	private List<EntCities> citiesList = new List<EntCities>();
+	protected int id = 85445333;
+	private string SelectedValue { get; set; } = "0";
+	protected override async Task OnInitializedAsync()
+	{
+		await GetCitiesList();
+		tourGuide = await tourGuideService.GetTourGuideProfile(id);
+	}
+
+	protected async Task GetCitiesList()
+	{
+		citiesList = await cityService.GetCities();
+	}
+
+	private void _CityOption(ChangeEventArgs c)
+	{
+		if(!string.IsNullOrEmpty(c.Value.ToString()))
+		{
+			tourGuide.fk_CityId = int.Parse(c.Value.ToString());
+		}
+		
+	}
+
+	protected async Task UpdateProfile()
+	{
+		if (tourGuide != null)
+		{
+			if (tourGuide.pk_TourGuideId < 0)
+			{
+				return;
+			}
+			await tourGuideService.UpdateTourGuide(tourGuide);
+			NavigationManager.NavigateTo("/");
+		}
+	}
+	protected void Cancel()
+	{
+		tourGuide = null;
+	}
+
+}

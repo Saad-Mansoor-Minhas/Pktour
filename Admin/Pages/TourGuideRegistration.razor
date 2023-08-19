@@ -1,0 +1,141 @@
+﻿@page "/tourguideregistration"
+@using Admin.Data;
+@using ClassLibraryEntity;
+@inject ITourGuideRegistrationService tourGuideRegistrationServiceService;
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>TourGuideRegistrations</PageTitle>
+
+@if (tourGuideRegistration != null)  //if city is null, form is not accessible
+{
+	<h1>Edit Tour Guide Registration</h1>
+	<EditForm Model="@tourGuideRegistration" OnValidSubmit="SaveTourGuideRegistration">
+		<DataAnnotationsValidator />
+
+		<div class="mb-3">
+			<label for="fk_CityId" class="form-label">fk_CityId</label>
+			<InputNumber class="form-control" @bind-Value="tourGuideRegistration.fk_CityId" />
+			<ValidationMessage For="@(() => tourGuideRegistration.fk_CityId)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="Name" class="form-label">Name</label>
+			<input type="text" class="form-control" @bind="tourGuideRegistration.Name" />
+			<ValidationMessage For="@(() => tourGuideRegistration.Name)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="CNIC" class="form-label">CNIC</label>
+			<input type="text" class="form-control" @bind="tourGuideRegistration.CNIC" />
+			<ValidationMessage For="@(() => tourGuideRegistration.CNIC)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="DOB" class="form-label">DOB</label>
+			<input type="date" class="form-control" @bind="tourGuideRegistration.DOB" />
+			<ValidationMessage For="@(() => tourGuideRegistration.DOB)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="Gender" class="form-label">Gender</label>
+			<input type="text" class="form-control" @bind="tourGuideRegistration.Gender" />
+			<ValidationMessage For="@(() => tourGuideRegistration.Gender)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="Sector" class="form-label">Sector</label>
+			<input type="text" class="form-control" @bind="tourGuideRegistration.Sector" />
+			<ValidationMessage For="@(() => tourGuideRegistration.Sector)" />
+		</div>
+
+		<div class="mb-3">
+			<label for="Email" class="form-label">Email</label>
+			<input type="text" class="form-control" @bind="tourGuideRegistration.Email" />
+			<ValidationMessage For="@(() => tourGuideRegistration.Email)" />
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">Save</button>
+			<button class="btn btn-light" @onclick="Cancel">Cancel</button>
+		</div>
+	</EditForm>
+}
+else
+{
+	<h1>TourGuideRegistration List</h1>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>TourGuide Id</th>
+				<th>fk_CityId</th>
+				<th>Name</th>
+				<th>CNIC</th>
+				<th>DOB</th>
+				<th>Gender</th>
+				<th>Sector</th>
+				<th>Email</th>
+				<th>RegDate</th>
+				<th>RegTime</th>
+				<th>RegStatus</th>
+				<th>Delete</th>
+				<th>Update</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in tourGuideRegistrationList)
+			{
+				<tr>
+					<td>@item.pk_TourGuideId</td>
+					<td>@item.fk_CityId</td>
+					<td>@item.Name</td>
+					<td>@item.CNIC</td>
+					<td>@item.DOB</td>
+					<td>@item.Gender</td>
+					<td>@item.Sector</td>
+					<td>@item.Email</td>
+					<td>@item.RegDate</td>
+					<td>@item.RegTime</td>
+					<td>@item.RegStatus</td>
+
+					@*<td><button type="button" @onclick="(async () => await DeleteCity(item.CityCode))" class="btn btn-danger">Delete</button></td>
+			*@
+					<td><button type="button" @*@onclick="(async () => await ShowConfirmDeleteDialog(item.CityCode))" *@ class="btn btn-danger">Delete</button></td>
+					<td><button type="button" @onclick="(async () => await NavigateToUpdateTourGuideRegistration(item))" class="btn btn-primary">Edit</button></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	protected List<EntTourGuideRegistration> tourGuideRegistrationList = new();
+	protected EntTourGuideRegistration? tourGuideRegistration;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetTourGuideRegistrationList();
+	}
+	protected async Task GetTourGuideRegistrationList()
+	{
+		tourGuideRegistrationList = await tourGuideRegistrationServiceService.GetAllTourGuideRegistration();
+	}
+
+	protected async Task NavigateToUpdateTourGuideRegistration(EntTourGuideRegistration entity)
+	{
+		await Task.Run(() => tourGuideRegistration = entity);
+	}
+
+	protected async Task SaveTourGuideRegistration()
+	{
+			
+		await tourGuideRegistrationServiceService.UpdateTourGuideRegistration(tourGuideRegistration);
+		tourGuideRegistration = null; // Reset the tourGuideRegistration object after update
+		await GetTourGuideRegistrationList();
+	}
+
+	protected void Cancel()
+	{
+		tourGuideRegistration = null; // Reset the tourGuideRegistration object on cancel
+	}
+}

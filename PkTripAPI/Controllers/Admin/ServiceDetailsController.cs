@@ -4,7 +4,7 @@ using ClassLibraryEntity;
 using ClassLibraryDAL;
 using System.Data.SqlClient;
 
-namespace PkTripAPI.Controllers
+namespace PkTripAPI.Controllers.Admin
 {
     [Route("api/")]
     [ApiController]
@@ -23,24 +23,24 @@ namespace PkTripAPI.Controllers
             else { return new ContentResult(); }
         }
 
-		[HttpGet]
-		[Route("getservicedetails/{SubCatId}")]
-		public async Task<ActionResult> GetServiceDetails(int SubCatId)
-		{
-			ContentResult result = new ContentResult();
-			SqlParameter[] sp =
-			{
-			new SqlParameter("@pk_SubCategoryId",SubCatId)
-			};
-			result = (ContentResult)await DalCRUD.ReadData("SP_GetServiceDetails",sp);
-			if (result != null)
-			{
-				return result;
-			}
-			else { return new ContentResult(); }
-		}
+        [HttpGet]
+        [Route("getservicedetails/{SubCatId}")]
+        public async Task<ActionResult> GetServiceDetails(int SubCatId)
+        {
+            ContentResult result = new ContentResult();
+            SqlParameter[] sp =
+            {
+            new SqlParameter("@pk_SubCategoryId",SubCatId)
+            };
+            result = (ContentResult)await DalCRUD.ReadData("SP_GetServiceDetails", sp);
+            if (result != null)
+            {
+                return result;
+            }
+            else { return new ContentResult(); }
+        }
 
-		[HttpPost]
+        [HttpPost]
         [Route("saveservicedetail")]
         public async Task SaveServiceDetails(EntServiceDetails obj)
         {

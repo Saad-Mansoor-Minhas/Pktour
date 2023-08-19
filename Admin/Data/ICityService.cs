@@ -8,7 +8,6 @@ namespace Admin.Data
         Task SaveCity(EntCities entity);
         Task DeleteCity(int id);
         Task UpdateCity(EntCities entity);
-
     }
 
 }

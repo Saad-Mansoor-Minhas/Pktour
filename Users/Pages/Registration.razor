@@ -1,0 +1,115 @@
+﻿@inject ICityService cityService
+@inject ITGRegistrationService tourGuideService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Email</PageTitle>
+
+@if (registration != null)
+{
+	<h3>Register as Tour Guide</h3>
+
+	<EditForm Model="@registration" OnValidSubmit="SaveTourGuide">
+		<DataAnnotationsValidator />
+
+		<div class="mb-3">
+
+			<InputText class="form-control" @bind-Value="registration.TourGuide.Name" placeholder="Enter Full Name" />
+			<ValidationMessage For="@(() => registration.TourGuide.Name)" />
+		</div>
+
+		<div class="mb-3">
+	
+			<InputText class="form-control" @bind-Value="@VerifiedEmailAddress" readonly="true" />
+		</div>
+
+		<div class="mb-3">
+			<select class="form-control" @onchange="_CityOption">
+				<option value="null" selected>--Select City--</option>
+				@if (citiesList != null)
+				{
+					@foreach (var item in citiesList)
+					{
+						<option value="@item.pk_CityId"> @item.CityName</option>
+					}
+				}
+			</select>
+		</div>
+
+		<div class="mb-3">
+
+			<InputText class="form-control" @bind-Value="registration.TourGuideCompany.Name" placeholder="Company Name" />
+			<ValidationMessage For="@(() => registration.TourGuideCompany.Name)" />
+		</div>
+
+		<div class="mb-3">
+
+			<InputText class="form-control" @bind-Value="registration.TourGuideCompany.Address" placeholder="Company Address" />
+			<ValidationMessage For="@(() => registration.TourGuideCompany.fk_AreaId)" />
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary form-control">Save</button>
+			<button class="btn btn-light form-control" @onclick="Cancel">Cancel</button>
+		</div>
+	</EditForm>
+}
+
+
+@code {
+
+	protected RegistrationModel registration { get; set; } = new RegistrationModel();
+	[Parameter] public string Evf { get; set; } = string.Empty;
+	private string VerifiedEmailAddress = string.Empty;
+	private List<EntCities> citiesList = new List<EntCities>();
+
+	protected override async Task OnInitializedAsync()
+	{
+		VerifiedEmailAddress = Evf;
+		await GetCitiesList();
+	}
+
+	protected async Task GetCitiesList()
+	{
+		citiesList = await cityService.GetCities();
+	}
+
+	protected void NavigateToRegisterTourGuide()
+	{
+		registration = new RegistrationModel();
+	}
+
+	protected async Task SaveTourGuide()
+	{
+		if (registration != null)
+		{
+			if (registration.TourGuide.pk_TourGuideId > 0)
+			{
+				await tourGuideService.RegisterTourGuide(registration); // for update
+			}
+			else
+			{
+				registration.TourGuide.Email = Evf;
+				await tourGuideService.RegisterTourGuide(registration); // for new registration
+				NavigationManager.NavigateTo("/");
+			}
+		}
+		
+		registration = new RegistrationModel(); // Reset the composite model after save/update
+	}
+
+	private void _CityOption(ChangeEventArgs c)
+	{
+		registration.TourGuide.fk_CityId = int.Parse(c.Value.ToString());
+	}
+
+	public void TestingEmail()
+	{
+		Console.WriteLine($"Received verified email: {registration.TourGuide.Email}");
+	}
+
+	protected void Cancel()
+	{
+		registration = new RegistrationModel(); // Reset the composite model on cancel
+	}
+}
