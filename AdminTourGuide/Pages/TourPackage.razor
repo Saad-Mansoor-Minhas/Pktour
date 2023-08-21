@@ -1,0 +1,108 @@
+﻿@page "/tourpackage"
+@inject ITourPackageService tourPackageService
+
+<PageTitle>Tour Package</PageTitle>
+@if (tourPackage != null)  //if viewpoint is null, form is not accessible
+{
+	<h1>@(tourPackage.pk_PackageId > 0 ? "Edit Package Details" : "Add New Package")</h1>
+
+	<EditForm Model="@tourPackage" OnValidSubmit="SavePackage">
+		<DataAnnotationsValidator />
+
+		<div class="mb-3">
+			<InputText class="form-control" @bind-Value="tourPackage.Title" placeholder="Enter Package title" />
+			<ValidationMessage For="@(() => tourPackage.Title)" />
+		</div>
+		<div class="mb-3">
+			<InputText class="form-control" @bind-Value="tourPackage.Duration" placeholder="Enter Duration (in Days)" />
+			<ValidationMessage For="@(() => tourPackage.Duration)" />
+		</div>
+
+		<div class="mb-3">
+			<InputNumber class="form-control" @bind-Value="tourPackage.Pricing" placeholder="Enter Price" />
+			<ValidationMessage For="@(() =>tourPackage.Pricing)" />
+		</div>
+
+		<div class="mb-3">
+			<InputText class="form-control" @bind-Value="tourPackage.FromCity" placeholder="From City" />
+			<ValidationMessage For="@(() =>tourPackage.FromCity)" />
+		</div>
+
+		<div class="mb-3">
+			<InputText class="form-control" @bind-Value="tourPackage.ToCity" placeholder="To City" />
+			<ValidationMessage For="@(() =>tourPackage.ToCity)" />
+		</div>
+
+		<div class="form-group">
+			<button type="submit" class="btn btn-primary">Save</button>
+			<button class="btn btn-light" @onclick="Cancel">Cancel</button>
+		</div>
+	</EditForm>
+}
+else
+{
+	<h1>Tour Packages List</h1>
+	<button type="button" @onclick="NavigateToAddTourPackage" class="btn btn-primary">Add Tour Package</button>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Package Id</th>
+				<th>Company Id</th>
+				<th>Title</th>
+				<th>Duration</th>
+				<th>Pricing</th>
+				<th>From City</th>
+				<th>To City</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in TourPackagesList)
+			{
+				<tr>
+					<td>@item.pk_PackageId</td>
+					<td>@item.fk_CompanyId</td>
+					<td>@item.Title</td>
+					<td>@item.Duration</td>
+					<td>@item.Pricing</td>
+					<td>@item.FromCity</td>
+					<td>@item.ToCity</td>
+					<td><button type="button" @onclick="(async () => await NavigateToUpdateTourPackage(item))" class="btn btn-primary">Edit</button></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+
+@code {
+	List<EntTourPackage> TourPackagesList = new List<EntTourPackage>();
+	EntTourPackage tourPackage { get; set; }
+
+	int companyid = 89822974;
+
+	protected override async Task OnInitializedAsync()
+	{
+		await GetTourPackages();
+	}
+	private async Task GetTourPackages()
+	{
+		TourPackagesList = await tourPackageService.GetTourPackages(companyid);
+	}
+	private async Task NavigateToAddTourPackage()
+	{
+		tourPackage = new EntTourPackage();
+	}
+	private async Task NavigateToUpdateTourPackage(EntTourPackage package)
+	{
+		tourPackage = package;
+	}
+	private async Task SavePackage()
+	{
+
+	}
+
+	protected void Cancel()
+	{
+		tourPackage = null; // Reset the tourpackage object on cancel
+	}
+
+}

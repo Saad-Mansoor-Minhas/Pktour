@@ -15,6 +15,7 @@ builder.Services.AddSingleton<IServiceCategoryService, ServiceCategoryService>()
 builder.Services.AddSingleton<IServiceSubCategoryService, ServiceSubCategoryService>();
 builder.Services.AddSingleton<IServiceDetailsService, ServiceDetailsService>();
 builder.Services.AddSingleton<ICompanyServicesService, CompanyServicesService>();
+builder.Services.AddSingleton<ITourPackageService, TourPackageService>();
 
 builder.Services.AddHttpClient<ICityService,CityService>(e =>
 {
@@ -52,6 +53,11 @@ builder.Services.AddHttpClient<IServiceDetailsService, ServiceDetailsService>(e 
 });
 
 builder.Services.AddHttpClient<ICompanyServicesService, CompanyServicesService>(e =>
+{
+	e.BaseAddress = new Uri("http://localhost:5179/");
+});
+
+builder.Services.AddHttpClient<ITourPackageService, TourPackageService>(e =>
 {
 	e.BaseAddress = new Uri("http://localhost:5179/");
 });

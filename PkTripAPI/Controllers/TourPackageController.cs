@@ -15,24 +15,29 @@ namespace PkTripAPI.Controllers
 	public class TourPackageController : ControllerBase
 	{
 		[HttpGet]
-		[Route("gettourpackage")]
-		public async Task<ActionResult> GetTourPackage()
+		[Route("gettourpackage/{companyId}")]
+		public async Task<ActionResult> GetTourPackage(int companyId)
 		{
 			ContentResult result = new ContentResult();
-			result = (ContentResult)await DalCRUD.ReadData("SP_GetTourPackage");
+			SqlParameter[] sp =
+			{
+				new SqlParameter("@pk_CompanyId",companyId)
+			};
+			result = (ContentResult)await DalCRUD.ReadData("SP_GetTourPackage", sp);
 			if (result != null)
 			{
 				return result;
 			}
 			else { return new ContentResult(); }
 		}
+
 		[HttpPost]
 		[Route("savetourpackage")]
 		public async Task SaveTourPackage(EntTourPackage etp)
 		{
 			SqlParameter[] sp =
 			{
-				new SqlParameter("@fk_TourGuideId",etp.fk_TourGuideId),
+				new SqlParameter("@fk_CompanyId",etp.fk_CompanyId),
 				new SqlParameter("@Title",etp.Title),
 				new SqlParameter("@Duration",etp.Duration),
 				new SqlParameter("@Pricing",etp.Pricing),
@@ -41,7 +46,6 @@ namespace PkTripAPI.Controllers
 			};
 			await DalCRUD.CRUD("SP_SaveTourPackage", sp);
 		}
-
 
 
 		[HttpDelete]
@@ -63,7 +67,7 @@ namespace PkTripAPI.Controllers
 			{
 
 				new SqlParameter("@pk_PackageId",etp.pk_PackageId),
-				new SqlParameter("@fk_TourGuideId",etp.fk_TourGuideId),
+				new SqlParameter("@fk_CompanyId",etp.fk_CompanyId),
 				new SqlParameter("@Title",etp.Title),
 				new SqlParameter("@Duration",etp.Duration),
 				new SqlParameter("@Pricing",etp.Pricing),
@@ -73,9 +77,6 @@ namespace PkTripAPI.Controllers
 			await DalCRUD.CRUD("SP_UpdateTourPackage", sp);
 		}
 	}
-
-
-
 
 
 }

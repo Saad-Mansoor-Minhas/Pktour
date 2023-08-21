@@ -7,7 +7,7 @@
 
 <PageTitle>Company Registration</PageTitle>
 
-@if (companyRegistration != null)  //if viewpoint is null, form is not accessible
+@if (companyRegistration != null)  //if company is null, form is not accessible
 {
 	<h1>@(companyRegistration.pk_CompanyId > 0 ? "Edit Company Details" : "Add New Company")</h1>
 
@@ -73,7 +73,6 @@
 }
 else
 {
-
 
 	<h1>Companies List</h1>
 	<button type="button" @onclick="NavigateToAddNewCompany" class="btn btn-primary">Add Company</button>
